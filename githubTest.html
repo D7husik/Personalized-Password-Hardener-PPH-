@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PPH – GitHub Pages Compatible</title>
+
+<!-- crypto-js (PBKDF2, SHA256) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
+
+<style>
+body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+}
+.container {
+    max-width: 600px;
+    margin: auto;
+}
+input, textarea {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+}
+.tab-btn {
+    padding: 8px 12px;
+    margin-right: 6px;
+    border: 1px solid #555;
+    background: #eee;
+    cursor: pointer;
+}
+.tab-btn.active {
+    background: #333;
+    color: white;
+}
+.output-box {
+    background: #f7f7f7;
+    padding: 12px;
+    border: 1px solid #ccc;
+    word-wrap: break-word;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Personalized Password Hardener</h2>
+
+    <label>Base password:</label>
+    <input id="password" type="text">
+
+    <label>Personal salt (metadata):</label>
+    <input id="salt" type="text">
+
+    <label>Iterations:</label>
+    <input id="iter" type="number" value="150000">
+
+    <label>Output length (bytes):</label>
+    <input id="length" type="number" value="32">
+
+    <button onclick="derive()">Generate</button>
+
+    <h3>Variants</h3>
+    <button class="tab-btn active" onclick="showVariant('short', this)">Short</button>
+    <button class="tab-btn" onclick="showVariant('long', this)">Long Hex</button>
+    <button class="tab-btn" onclick="showVariant('base64', this)">Base64</button>
+
+    <div class="output-box" id="result"></div>
+</div>
+
+<script>
+
+// PBKDF2 using crypto-js
+function derive() {
+    const password = document.getElementById("password").value;
+    const salt = document.getElementById("salt").value;
+    const iter = parseInt(document.getElementById("iter").value);
+    const keyLen = parseInt(document.getElementById("length").value);
+
+    const hash = CryptoJS.PBKDF2(password, salt, {
+        keySize: keyLen / 4,
+        iterations: iter,
+        hasher: CryptoJS.algo.SHA256
+    });
+
+    const hex = hash.toString(CryptoJS.enc.Hex);
+    const b64 = CryptoJS.enc.Base64.stringify(hash);
+
+    window.__pph_variants = {
+        short: hex.slice(0, 16),
+        long: hex,
+        base64: b64
+    };
+
+    document.getElementById("result").textContent = window.__pph_variants.short;
+}
+
+// fix event usage
+function showVariant(name, el) {
+    const buttons = document.querySelectorAll(".tab-btn");
+    buttons.forEach(btn => btn.classList.remove("active"));
+    el.classList.add("active");
+
+    if (window.__pph_variants) {
+        document.getElementById("result").textContent = window.__pph_variants[name];
+    }
+}
+
+</script>
+
+</body>
+</html>
