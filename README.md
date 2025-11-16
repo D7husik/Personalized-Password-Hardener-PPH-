@@ -1,4 +1,4 @@
-# Personalized-Password-Hardener-PPH-
+
 # Personalized Password Hardener (PPH)
 
 ## 🎯 Project Overview
